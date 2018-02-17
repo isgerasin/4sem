@@ -1,0 +1,306 @@
+        -:    0:Source:list.c
+        -:    0:Graph:./list.gcno
+        -:    0:Data:./list.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#include <malloc.h>
+        -:    2:#include <stdio.h>
+        -:    3:#include "list.h"
+        -:    4:
+function ListElemCtor called 4 returned 100% blocks executed 100%
+        4:    5:ListElem* ListElemCtor(ListData data)
+        -:    6:{
+        4:    7:	ListElem* this = NULL;
+        4:    8:	this = (ListElem*) calloc(1, sizeof(ListElem));
+        4:    9:	if (this == NULL)
+branch  0 taken 25% (fallthrough)
+branch  1 taken 75%
+        1:   10:		return this;
+        3:   11:	this->next = NULL;
+        3:   12:	this->prev = NULL;
+        3:   13:	this->data = data;
+        3:   14:	return this;
+        -:   15:}
+        -:   16:
+function ListElemDtor called 4 returned 100% blocks executed 100%
+        4:   17:int ListElemDtor(ListElem* this, void* contx)
+        -:   18:{
+        4:   19:	if (!this)
+branch  0 taken 25% (fallthrough)
+branch  1 taken 75%
+        1:   20:		return PTRERR;
+        3:   21:	this->next = NULL;
+        3:   22:	this->prev = NULL;
+        3:   23:	this->data = BAD_DATA;
+        3:   24:	free(this);
+        3:   25:	return 0;
+        -:   26:}
+        -:   27:
+function ListElemOk called 4 returned 100% blocks executed 100%
+        4:   28:int ListElemOk(ListElem* this, void* contx)
+        -:   29:{
+        9:   30:	return !(this &&
+branch  0 taken 75% (fallthrough)
+branch  1 taken 25%
+branch  2 taken 67% (fallthrough)
+branch  3 taken 33%
+branch  4 taken 0% (fallthrough)
+branch  5 taken 100%
+        3:   31:			this->next &&
+        2:   32:			this->prev);
+        -:   33:}
+        -:   34:
+function ListElemDump called 5 returned 100% blocks executed 100%
+        5:   35:int ListElemDump(ListElem* this, void* contx)
+        -:   36:{
+        5:   37:	if (!contx)
+branch  0 taken 20% (fallthrough)
+branch  1 taken 80%
+        1:   38:		return PTRERR;
+        4:   39:	FILE* output = (FILE*) contx;
+        4:   40:	fprintf(output, "=====ListElem Dump[%p]=======\n", this);
+call    0 returned 100%
+        -:   41:	
+        4:   42:	if (ListElemOk(this, NULL) == 0)
+call    0 returned 100%
+branch  1 taken 50% (fallthrough)
+branch  2 taken 50%
+        2:   43:		fprintf(output, "ok\n");
+call    0 returned 100%
+        -:   44:	else
+        2:   45:		fprintf(output, "ERROR!!!\n=================\n");
+call    0 returned 100%
+        4:   46:	if (this == NULL)
+branch  0 taken 25% (fallthrough)
+branch  1 taken 75%
+        1:   47:		return PTRERR;
+        3:   48:	fprintf(output, "\tdata = %i\n"
+call    0 returned 100%
+        -:   49:					"\tprev = %p\n"
+        -:   50:					"\tnext = %p\n"
+        -:   51:					"=============================\n",
+        -:   52:					this->data, this->prev, this->next);
+        3:   53:	return 0;
+        -:   54:}
+        -:   55:
+function ListCtor called 2 returned 100% blocks executed 100%
+        2:   56:List* ListCtor()
+        -:   57:{
+        2:   58:	List* this = (List*) calloc(1, sizeof(List));
+        2:   59:	if (this == NULL)
+branch  0 taken 50% (fallthrough)
+branch  1 taken 50%
+        1:   60:		return this;
+        1:   61:	this->head = NULL;
+        1:   62:	this->tail = NULL;
+        1:   63:	this->numbers = 0;
+        1:   64:	return this;
+        -:   65:}
+        -:   66:
+function ForEach called 7 returned 100% blocks executed 100%
+        7:   67:int ForEach(List* this, int (*act)(ListElem* elem, void* ctx), void* ctx)
+        -:   68:{
+        7:   69:	if (!(this && act))
+branch  0 taken 71% (fallthrough)
+branch  1 taken 29%
+branch  2 taken 0% (fallthrough)
+branch  3 taken 100%
+        2:   70:		return PTRERR;
+        -:   71:
+        5:   72:	ListElem* elem = this->head;
+        5:   73:	ListElem* nextElem = NULL;
+       14:   74:	while(this->numbers && nextElem != this->head)
+branch  0 taken 78% (fallthrough)
+branch  1 taken 22%
+branch  2 taken 71%
+branch  3 taken 29% (fallthrough)
+        -:   75:	{
+        5:   76:		nextElem = elem->next;
+        5:   77:		int res = act(elem, ctx);
+call    0 returned 100%
+        5:   78:		if (res)
+branch  0 taken 20% (fallthrough)
+branch  1 taken 80%
+        1:   79:			return res;
+        4:   80:		elem = nextElem;
+        -:   81:	}
+        4:   82:	return 0;
+        -:   83:}
+        -:   84:
+function ListDtor called 2 returned 100% blocks executed 100%
+        2:   85:int ListDtor(List* this)
+        -:   86:{
+        2:   87:	if (!this)
+branch  0 taken 50% (fallthrough)
+branch  1 taken 50%
+        1:   88:		return PTRERR;
+        1:   89:	int res = ForEach(this, &ListElemDtor, NULL);
+call    0 returned 100%
+        1:   90:	this->head = NULL;
+        1:   91:	this->tail = NULL;
+        1:   92:	this->numbers = 0;
+        1:   93:	free(this);
+        1:   94:	return res;
+        -:   95:}
+        -:   96:
+function ListOk called 3 returned 100% blocks executed 100%
+        3:   97:int ListOk(List* this)
+        -:   98:{
+        4:   99:	return this == NULL &&
+branch  0 taken 33% (fallthrough)
+branch  1 taken 67%
+branch  2 taken 100% (fallthrough)
+branch  3 taken 0%
+        1:  100:		   ForEach(this, ListElemOk, NULL);
+call    0 returned 100%
+        -:  101:}
+        -:  102:
+function ListDump called 4 returned 100% blocks executed 100%
+        4:  103:int ListDump(List* this, FILE* output)
+        -:  104:{
+        4:  105:	if (!output)
+branch  0 taken 25% (fallthrough)
+branch  1 taken 75%
+        1:  106:		return PTRERR;
+        -:  107:
+        3:  108:	fprintf(output, "------List %p-------\n", this);
+call    0 returned 100%
+        -:  109:
+        3:  110:	if (ListOk(this) == 0)
+call    0 returned 100%
+branch  1 taken 67% (fallthrough)
+branch  2 taken 33%
+        2:  111:		fprintf(output, "ok\n");
+call    0 returned 100%
+        -:  112:	else
+        1:  113:		fprintf(output, "ERROR!!!\n------------------\n");
+call    0 returned 100%
+        3:  114:	if (this == NULL)
+branch  0 taken 33% (fallthrough)
+branch  1 taken 67%
+        1:  115:		return PTRERR;
+        2:  116:	fprintf(output, "\thead = %p\n"
+call    0 returned 100%
+        -:  117:					"\ttail = %p\n"
+        -:  118:					"\tnumbers = %lu\n{\n",
+        -:  119:					this->head, this->tail, this->numbers);
+        2:  120:	int res = ForEach(this, ListElemDump, (void*) output);
+call    0 returned 100%
+        2:  121:	fprintf(output, "}\n---------------------\n");
+call    0 returned 100%
+        -:  122:
+        2:  123:	return res;
+        -:  124:}
+        -:  125:
+function ListAddAfter called 5 returned 100% blocks executed 100%
+        5:  126:int ListAddAfter(List* this, ListElem* elem, ListElem* after)
+        -:  127:{
+        5:  128:	if (!(this && elem && after))
+branch  0 taken 80% (fallthrough)
+branch  1 taken 20%
+branch  2 taken 100% (fallthrough)
+branch  3 taken 0%
+branch  4 taken 0% (fallthrough)
+branch  5 taken 100%
+        1:  129:		return PTRERR;
+        4:  130:	ListElem* before = after->next;
+        4:  131:	elem->next = before;
+        4:  132:	elem->prev = after;
+        4:  133:	after->next = elem;
+        4:  134:	before->prev = elem;
+        4:  135:	this->numbers++;
+        4:  136:	return 0;
+        -:  137:}
+        -:  138:
+function ListAddTail called 4 returned 100% blocks executed 100%
+        4:  139:int ListAddTail(List* this, ListElem* elem)
+        -:  140:{
+        4:  141:	if (!(this && elem))
+branch  0 taken 75% (fallthrough)
+branch  1 taken 25%
+branch  2 taken 0% (fallthrough)
+branch  3 taken 100%
+        1:  142:		return PTRERR;
+        3:  143:	if(!this->numbers)
+branch  0 taken 33% (fallthrough)
+branch  1 taken 67%
+        -:  144:	{
+        1:  145:		this->head = elem;
+        1:  146:		elem->next = elem;
+        1:  147:		elem->prev = elem;
+        1:  148:		this->numbers++;
+        -:  149:	}
+        -:  150:	else
+        2:  151:		ListAddAfter(this, elem, this->tail);
+call    0 returned 100%
+        3:  152:	this->tail = elem;
+        -:  153:
+        3:  154:	return 0;
+        -:  155:}
+        -:  156:
+function ListAddHead called 4 returned 100% blocks executed 100%
+        4:  157:int ListAddHead(List* this, ListElem* elem)
+        -:  158:{
+        4:  159:	if (!(this && elem))
+branch  0 taken 75% (fallthrough)
+branch  1 taken 25%
+branch  2 taken 0% (fallthrough)
+branch  3 taken 100%
+        1:  160:		return PTRERR;
+        -:  161:
+        3:  162:	if(!this->numbers)
+branch  0 taken 33% (fallthrough)
+branch  1 taken 67%
+        -:  163:	{
+        1:  164:		this->tail = elem;
+        1:  165:		elem->next = elem;
+        1:  166:		elem->prev = elem;
+        1:  167:		this->numbers++;
+        -:  168:	}
+        -:  169:	else
+        2:  170:		ListAddAfter(this, elem, this->tail);
+call    0 returned 100%
+        3:  171:	this->head = elem;
+        -:  172:
+        3:  173:	return 0;
+        -:  174:}
+        -:  175:
+        -:  176:
+function ListDelElem called 5 returned 100% blocks executed 100%
+        5:  177:int ListDelElem(List* this, ListElem* elem)
+        -:  178:{
+        5:  179:	if (!(this && elem))
+branch  0 taken 100% (fallthrough)
+branch  1 taken 0%
+branch  2 taken 20% (fallthrough)
+branch  3 taken 80%
+        1:  180:		return PTRERR;
+        -:  181:	
+        4:  182:	if (this->numbers == 1)
+branch  0 taken 25% (fallthrough)
+branch  1 taken 75%
+        -:  183:	{
+        1:  184:		this->tail = NULL;
+        1:  185:		this->head = NULL;
+        -:  186:	}
+        -:  187:	else
+        -:  188:	{
+        3:  189:		ListElem* before = elem->prev;
+        3:  190:		before->next = elem->next;
+        3:  191:		elem->next->prev = before;
+        3:  192:		if (this->head == elem)
+branch  0 taken 33% (fallthrough)
+branch  1 taken 67%
+        1:  193:			this->head = elem->next;
+        2:  194:		else if (this->tail == elem)
+branch  0 taken 50% (fallthrough)
+branch  1 taken 50%
+        1:  195:			this->tail = elem->prev;
+        -:  196:	}
+        -:  197:
+        4:  198:	elem->prev = NULL;
+        4:  199:	elem->next = NULL;
+        4:  200:	this->numbers--;
+        -:  201:
+        4:  202:	return 0;
+        -:  203:}
