@@ -1,26 +1,39 @@
+#define _GNU_SOURCE             /* See feature_test_macros(7) */
+
 #include <stdio.h>
-#include <pthread.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <pthread.h>
+#include <sched.h>
+#include <unistd.h>
+
+
 /*
 #define X_START (-1)
 #define X_END (1)
 #define CUTS 100
 */
+#define _(var) do {errno = 0; \
+			if ((var)!=0) \
+				{ perror(#var); return -1;} }while(0)
+
 #define PL fprintf(stderr, "%d\n", __LINE__);
 
 typedef struct CalcArgs
 {
-	int cutNumber;
+	unsigned long long cutNumber;
 	double xStart;
 	double xEnd;
 	double (*f)(double x);
 	double sum;
 	pthread_t tid;
+	pthread_attr_t attr;
+	cpu_set_t cpuSet;
 }CalcArgs;
 
 double X_START = -100;
 double X_END = 100;
-long long int CUTS = 10000000000;
+unsigned long long CUTS = (unsigned long long)360360000*7;
 
 double f(double x)
 {
@@ -60,8 +73,8 @@ int main(int argc, char const *argv[])
 	if (!args)
 		return EXIT_FAILURE;
 
-	int eachCutNum = CUTS / nThreads;
-
+	unsigned long long eachCutNum = CUTS / nThreads;
+	int maxThreads = sysconf(_SC_NPROCESSORS_CONF);
 	double cutLong = (X_END - X_START)/ nThreads;
 
 	for (int i = 0; i < nThreads; i++)
@@ -70,14 +83,26 @@ int main(int argc, char const *argv[])
 		args[i].xStart = X_START + cutLong*i;
 		args[i].xEnd = args[i].xStart + cutLong;
 		args[i].cutNumber = eachCutNum;
-		pthread_create(&args[i].tid, NULL, calculate, args + i);
+		_(pthread_attr_getaffinity_np(&args[i].attr, sizeof(args[i].cpuSet), &args[i].cpuSet));
+		if (i < maxThreads)
+		{
+			CPU_ZERO(&args[i].cpuSet);
+			CPU_SET(i % maxThreads, &args[i].cpuSet);
+		}
+		_(pthread_attr_setinheritsched(&args[i].attr, PTHREAD_EXPLICIT_SCHED));
+		_(pthread_attr_setaffinity_np(&args[i].attr, sizeof(args[i].cpuSet), &args[i].cpuSet));
+
 	}
+
+	for (int i = 0; i < nThreads; i++)
+		_(pthread_create(&args[i].tid, &args[i].attr, calculate, args + i));
+
 	// PL;
 	double sum = 0;
 	for (int i = 0; i < nThreads; i++)
 	{
 		//fprintf(stderr, "%d |", i);
-		pthread_join(args[i].tid, NULL);
+		_(pthread_join(args[i].tid, NULL));
 		sum += args[i].sum;
 	}
 	// PL;

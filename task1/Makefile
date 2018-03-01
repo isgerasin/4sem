@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS= -fprofile-arcs -ftest-coverage
+CFLAGS=-fprofile-arcs -ftest-coverage
 
 a.out: test.o list.o
 	$(CC) -o $@ $^ $(CFLAGS)
