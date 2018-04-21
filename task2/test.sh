@@ -1,13 +1,20 @@
 #!/bin/bash
-MC=16
+MC=14
 rm output
-for ((k = 1; k < 5; k++))
+# echo "N   real   user   %" >> output
+for ((k = 1; k < 2; k++))
 do
-	for ((i = 1; i < ${MC}+1; i++))
+	echo -n "1, " >> output
+	ONETIME=`(time -p ./a.out 1 ) |& grep "real" | awk '{print $2}'`
+	echo ${ONETIME} >> output
+	echo -e "[1 / ${MC}]\e[32mDone\e[0m"
+
+	for ((i = 2; i < ${MC}+1; i++))
 	do
 		echo -n "$i, " >> output
-		(time -p ./a.out $i ) |& grep "real" | awk '{print $2}' >> output
+		(time -p ./a.out $i ) |& grep "real" | awk '{print $2, " ", '$ONETIME'/('$i'*($2))}' >> output
 		echo -e "[$i / ${MC}]\e[32mDone\e[0m"
 	done
 	echo "$k"
+    cat output
 done
