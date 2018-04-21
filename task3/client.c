@@ -165,7 +165,7 @@ int connectServer(struct sockaddr_in* server, long nThreads)
 
 	struct sockaddr_in addr = {
 		.sin_family = AF_INET,
-		.sin_port = htons(4000),
+		.sin_port = htons(PORT),
 		.sin_addr = htonl(INADDR_ANY)
 	};
 	_(bind(fdUdp, &addr, sizeof(addr)));
@@ -198,9 +198,35 @@ int main(int argc, char const *argv[])
 	}
 
 	struct sockaddr_in server = {};
-	_(connectServer(&server, nThreads));
+	int fd = 0;
+	_(fd = connectServer(&server, nThreads));
 
-	// printf("%lg\n", integrate(X_START, X_END, CUTS, nThreads));
+	// int fd = 0;
+	_(fd = socket(PF_INET, SOCK_STREAM, 0));
+	sleep(1);
+	_(connect(fd, (struct sockaddr*)&server, sizeof(server)));
+
+	// _(bind(fd, (struct sockaddr*)&server, sizeof(server)));
+	// _(listen(fd, 256));
+	int sk = 0;
+	sk = fd;
+	socklen_t len = 0;
+	InetCut cut = {};
+	PL;
+	// _(sk = accept(fd, (struct sockaddr*)&server, &len));
+	PL;
+	_(read(sk, &cut, sizeof(cut)));
+	PL;
+	double sum = 0;
+	_(sum = integrate(cut.xStart, cut.xEnd, cut.cutNumber, cut.nThreads));
+	_(write(sk, &sum, sizeof(sum)));
+	PL;
+	close(sk);
+	close(fd);
+
+
+
+	printf("%lg\n", sum);
 
 	return 0;
 }
