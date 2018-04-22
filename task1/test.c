@@ -24,6 +24,8 @@ int main(int argc, char const *argv[])
 	getrlimit(RLIMIT_AS, &tmpold);
 	tmpnew.rlim_cur = 0;
 	tmpnew.rlim_max = tmpold.rlim_max;
+//--------------
+/*
 	setrlimit(RLIMIT_AS, &tmpnew);
 
 	ListElem* elemC = ListElemCtor(88);
@@ -32,7 +34,8 @@ int main(int argc, char const *argv[])
 	PRINT_RES(listC, == NULL);
 
 	setrlimit(RLIMIT_AS, &tmpold);
-
+*/
+//-----------------------------
 	FILE* out = fopen("2.dump", "w");
 	PRINT_RES(out, != NULL);
 

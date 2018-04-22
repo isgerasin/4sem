@@ -13,7 +13,7 @@
 		if (!(ptr)) \
 			return PTRERR
 
-
+ 
 typedef int ListData;
 
 typedef struct ListElem

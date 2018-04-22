@@ -4,10 +4,8 @@ CFLAGS=-fprofile-arcs -ftest-coverage
 a.out: test.o list.o
 	$(CC) -o $@ $^ $(CFLAGS)
 
-%.o: %.c
+%.o: %.c list.h
 	$(CC) -o $@ -c $< $(CFLAGS)
-
-list.o: list.h
 
 clean:
 	rm *.o *.out
