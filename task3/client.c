@@ -172,11 +172,21 @@ int connectServer(struct sockaddr_in* server, long nThreads)
 	_(recvfrom(fdUdp, &msg, sizeof(msg), 0, (struct sockaddr*)server, &fromLen));
 
 	printf("server: %c %s\n", msg, inet_ntoa(server->sin_addr));
+	int fd = 0;
+	// _(fd = socket(PF_INET, SOCK_STREAM, 0));
+	// _(listen(fd, 256));
+
+	// _(bind(fd, (struct sockaddr*) &server, sizeof(server)));
+	// int sk = 0;
+	// _(sk = accept())
+
+
+
 
 	_(sendto(fdUdp, &nThreads, sizeof(nThreads), 0, (struct sockaddr*)server, sizeof(*server)));
 
 	close(fdUdp);
-	return 0;
+	return fd;
 }
 
 int main(int argc, char const *argv[])
@@ -202,8 +212,9 @@ int main(int argc, char const *argv[])
 	_(fd = connectServer(&server, nThreads));
 
 	// int fd = 0;
-	_(fd = socket(PF_INET, SOCK_STREAM, 0));
 	sleep(1);
+	// int fd = 0;
+	_(fd = socket(PF_INET, SOCK_STREAM, 0));
 	_(connect(fd, (struct sockaddr*)&server, sizeof(server)));
 
 	// _(bind(fd, (struct sockaddr*)&server, sizeof(server)));

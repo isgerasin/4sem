@@ -34,16 +34,16 @@ int connectClients(ClientId* clients, long nCalc)
 	_(setsockopt(fdUdp, SOL_SOCKET, SO_BROADCAST, &tm, sizeof(tm)));
 
 	char msg = 's';
-	
 	int nClients = 0;
 	int residue = 0;
+	ssize_t ret = 0;
 	alarm(5);
 	for (residue = nCalc; residue > 0; )
 	{
 		_(sendto(fdUdp, &msg, sizeof(msg), 0, (struct sockaddr*)&addr, sizeof(addr)));
 
 		errno = 0;
-		ssize_t ret = recvfrom(fdUdp, &clients[nClients].nThreads,
+		ret = recvfrom(fdUdp, &clients[nClients].nThreads,
 			sizeof(clients[nClients].nThreads), MSG_DONTWAIT,
 			(struct sockaddr*)&clients[nClients].addr, &clients[nClients].addrLen);
 
@@ -53,16 +53,20 @@ int connectClients(ClientId* clients, long nCalc)
 		if (ret != -1)
 		{
 			residue -= clients[nClients].nThreads;
-			_(clients[nClients].fd = socket(PF_INET, SOCK_STREAM, 0));
-			_(bind(clients[nClients].fd, (struct sockaddr*) &clients[nClients].addr, sizeof(clients[nClients].addr)));
-			_(listen(clients[nClients].fd, 256));
-			
-			_(clients[nClients].sk = accept(clients[nClients].fd, (struct sockaddr*) &clients[nClients].addr, &clients[nClients].addrLen));
-
-
-			// printf("%d\n", clients[nClients].nThreads);
 			nClients++;
 
+			_(clients[nClients].fd = socket(PF_INET, SOCK_STREAM, 0));
+			_(listen(clients[nClients].fd, 256));
+
+/*
+
+			_(bind(clients[nClients].fd, (struct sockaddr*) &clients[nClients].addr, sizeof(clients[nClients].addr)));
+
+			_(clients[nClients].sk = accept(clients[nClients].fd, (struct sockaddr*) &clients[nClients].addr, &clients[nClients].addrLen));
+
+*/
+
+			// printf("%d\n", clients[nClients].nThreads);
 		}
 	}
 	alarm(0);
@@ -111,10 +115,10 @@ int main(int argc, char const *argv[])
 		cuts[i].cutNumber = cuts[i].nThreads*eachCutNum;
 
 		// _(clients[i].fd = socket(PF_INET, SOCK_STREAM, 0));
-		// _(bind(clients[i].fd, (struct sockaddr*) &clients[i].addr, sizeof(clients[i].addr)));
+		_(bind(clients[i].fd, (struct sockaddr*) &clients[i].addr, sizeof(clients[i].addr)));
 		// _(listen(clients[i].fd, 256));
 
-		// _(clients[i].sk = accept(clients[i].fd, (struct sockaddr*) &clients[i].addr, &clients[i].addrLen));
+		_(clients[i].sk = accept(clients[i].fd, (struct sockaddr*) &clients[i].addr, &clients[i].addrLen));
 		// _(connect(clients[i].sk, (struct sockaddr*)&clients[i].addr, clients[i].addrLen));
 
 	}
