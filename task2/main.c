@@ -18,8 +18,8 @@ typedef struct CalcArgs
 	pthread_t tid;
 }CalcArgs;
 
-double X_START = -100;
-double X_END = 100;
+double X_START = -10000;
+double X_END = 10000;
 long long int CUTS = 10000000000;
 
 double f(double x)
