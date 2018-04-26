@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -26,45 +27,41 @@ int connectClients(ClientId* clients, long nCalc)
 
 	struct sockaddr_in addr = {
 		.sin_family = AF_INET,
-		.sin_port = htons(PORT),
+		.sin_port = htons(PORTUDP),
 		.sin_addr = htonl(INADDR_BROADCAST)
 	};
 
 	int tm = 1;
 	_(setsockopt(fdUdp, SOL_SOCKET, SO_BROADCAST, &tm, sizeof(tm)));
 
-	char msg = 's';
+	char msgC = 's';
 	
 	int nClients = 0;
 	int residue = 0;
-	alarm(5);
+	ssize_t ret = 0;
+	alarm(10);
 	for (residue = nCalc; residue > 0; )
 	{
-		_(sendto(fdUdp, &msg, sizeof(msg), 0, (struct sockaddr*)&addr, sizeof(addr)));
+		_(sendto(fdUdp, &msgC, sizeof(msgC), 0, (struct sockaddr*)&addr, sizeof(addr)));
 
+		Msg msg = {};
 		errno = 0;
-		ssize_t ret = recvfrom(fdUdp, &clients[nClients].nThreads,
-			sizeof(clients[nClients].nThreads), MSG_DONTWAIT,
+		clients[nClients].addrLen = sizeof(clients[nClients].addr);
+		ret = recvfrom(fdUdp, &msg,
+			sizeof(msg), MSG_DONTWAIT,
 			(struct sockaddr*)&clients[nClients].addr, &clients[nClients].addrLen);
 
 		if ( ret == -1 && errno != EAGAIN && errno != EWOULDBLOCK)
 			return -1;
-
-		if (ret != -1)
+		else if (ret != -1)
 		{
+			clients[nClients].nThreads = msg.nThreads;
+			clients[nClients].addr.sin_port =  msg.port;
 			residue -= clients[nClients].nThreads;
-			_(clients[nClients].fd = socket(PF_INET, SOCK_STREAM, 0));
-			_(bind(clients[nClients].fd, (struct sockaddr*) &clients[nClients].addr, sizeof(clients[nClients].addr)));
-			_(listen(clients[nClients].fd, 256));
-			
-			_(clients[nClients].sk = accept(clients[nClients].fd, (struct sockaddr*) &clients[nClients].addr, &clients[nClients].addrLen));
-
-
-			// printf("%d\n", clients[nClients].nThreads);
 			nClients++;
-
 		}
 	}
+	// PL;
 	alarm(0);
 	clients[nClients-1].nThreads += residue;
 
@@ -94,7 +91,7 @@ int main(int argc, char const *argv[])
 	int nClients = 0;
 
 	_(nClients = connectClients(clients, nCalc));
-	printf("nClients = %d\n", nClients);
+	// printf("nClients = %d\n", nClients);
 
 	InetCut* cuts = calloc(nClients, sizeof(*cuts));
 
@@ -110,34 +107,29 @@ int main(int argc, char const *argv[])
 		curXStart = cuts[i].xEnd;
 		cuts[i].cutNumber = cuts[i].nThreads*eachCutNum;
 
-		// _(clients[i].fd = socket(PF_INET, SOCK_STREAM, 0));
-		// _(bind(clients[i].fd, (struct sockaddr*) &clients[i].addr, sizeof(clients[i].addr)));
-		// _(listen(clients[i].fd, 256));
+		// printf("i %d Threads %li Cuts %llu \n", i, cuts[i].nThreads, cuts[i].cutNumber );
 
-		// _(clients[i].sk = accept(clients[i].fd, (struct sockaddr*) &clients[i].addr, &clients[i].addrLen));
-		// _(connect(clients[i].sk, (struct sockaddr*)&clients[i].addr, clients[i].addrLen));
-
+		_(clients[i].fd = socket(PF_INET, SOCK_STREAM, 0));
+		_(connect(clients[i].fd, (struct sockaddr*)&clients[i].addr, sizeof(clients[i].addr)));
 	}
-	PL;
+
 	for (int i = 0; i < nClients; i++)
 	{
-		PL;
-		size_t len = write(clients[i].sk, cuts + i, sizeof(*cuts));
-
-		PL;
+		size_t len = 0;
+		_(len = write(clients[i].fd, cuts + i, sizeof(*cuts)));
 	}
-	PL;
+	
 	double sum = 0;
+	alarm(90);
 	for (int i = 0; i < nClients; i++)
 	{
-		_(read(clients[i].sk, &cuts[i].sum, sizeof(cuts[i].sum)));
+		size_t len = 0;
+		_(len = read(clients[i].fd, &cuts[i].sum, sizeof(cuts[i].sum)));
 		sum += cuts[i].sum;
-		close(clients[i].sk);
+		close(clients[i].fd);
 	}
-	PL;
-
-
-
+	alarm(0);
+	printf("%lg\n", sum);
 
 	return 0;
 }

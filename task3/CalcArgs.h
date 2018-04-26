@@ -1,7 +1,14 @@
 
 #include <pthread.h>
 
-#define PORT 4001
+#define PORTUDP 1080
+#define PORTTCP ((PORTUDP)/* + 4*/)
+
+typedef struct Msg
+{
+	long nThreads;
+	unsigned short int port;
+} Msg;
 
 typedef struct CalcArgs
 {
@@ -13,7 +20,7 @@ typedef struct CalcArgs
 	pthread_t tid;
 	pthread_attr_t attr;
 	cpu_set_t cpuSet;
-}CalcArgs;
+} CalcArgs;
 
 
 typedef struct InetCut

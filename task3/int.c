@@ -10,9 +10,8 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <unistd.h>
-#include <time.h>
 #include <signal.h>
-
+#include <time.h>
 
 #include "debug.h"
 #include "CalcArgs.h"
@@ -75,7 +74,6 @@ void* busy(void* args)
 
 int parseCpuinfo()
 {
-	maxPhys = 0;
 	size_t nread = 0;
 	size_t size = 1024 * 20;
 	FILE* fl = fopen("/proc/cpuinfo", "r");
@@ -113,6 +111,7 @@ int parseCpuinfo()
 
 double integrate(double xStart, double xEnd, unsigned long long cuts, long nThreads)
 {
+	parseCpuinfo();
 
 	CalcArgs* args = (CalcArgs*) calloc(max(nThreads, maxPhys), sizeof(CalcArgs));
 	int maxThreads = sysconf(_SC_NPROCESSORS_ONLN);
@@ -127,6 +126,7 @@ double integrate(double xStart, double xEnd, unsigned long long cuts, long nThre
 		args[i].xEnd = args[i].xStart + cutLong;
 		args[i].cutNumber = eachCutNum / (nThreads/maxThreads + (i%maxThreads<nThreads%maxThreads? 1 : 0) );
 		args[i].sum = 0;
+		printf("i %d Threads %li Cuts %llu \n", i, 0l, args[i].cutNumber );
 
 		_(pthread_attr_getaffinity_np(&args[i].attr, sizeof(args[i].cpuSet), &args[i].cpuSet));
 		CPU_ZERO(&args[i].cpuSet);
@@ -165,44 +165,9 @@ double integrate(double xStart, double xEnd, unsigned long long cuts, long nThre
 		args[i].cutNumber = 0;
 		_(pthread_join(args[i].tid, NULL));
 	}
-	free(args);
 	return sum;
 }
-//---------------------------------=========================
-int connectServer(struct sockaddr_in* server, long nThreads)
-{
-	
-	char msgC = 0;
-	socklen_t fromLen = sizeof(*server);
-	int fdUdp = 0;
-	struct sockaddr_in addrUdp = {
-		.sin_family = AF_INET,
-		.sin_port = htons(PORTUDP),
-		.sin_addr = htonl(INADDR_ANY)
-	};
-	_(fdUdp = socket(AF_INET, SOCK_DGRAM, 0));
-	_(bind(fdUdp, &addrUdp, sizeof(addrUdp)));
-	_(recvfrom(fdUdp, &msgC, sizeof(msgC), 0, (struct sockaddr*)server, &fromLen));
 
-	int fdTcp = 0;
-	struct sockaddr_in addrTcp = {
-		.sin_family = AF_INET,
-		.sin_port = 0,
-		.sin_addr = htonl(INADDR_ANY)
-	};
-	socklen_t tcpLen = sizeof(addrTcp);
-	_(fdTcp = socket(PF_INET, SOCK_STREAM, 0));
-	_(bind(fdTcp, (struct sockaddr*)&addrTcp, sizeof(addrTcp)));
-	_(listen(fdTcp, 256));
-
-	Msg msg = {};
-	_(getsockname(fdTcp, (struct sockaddr*)&addrTcp, &tcpLen));
-	msg.port = addrTcp.sin_port;
-	msg.nThreads = nThreads;
-	_(sendto(fdUdp, &msg, sizeof(msg), 0, (struct sockaddr*)server, sizeof(*server)));
-	close(fdUdp);
-	return fdTcp;
-}
 
 int main(int argc, char const *argv[])
 {
@@ -217,33 +182,13 @@ int main(int argc, char const *argv[])
 		printf("Usage: %s <number of threads(>=1)>\n", argv[0]);
 		return EXIT_FAILURE;
 	}
-	parseCpuinfo();
 
-	// while(1)
-	{
-		struct sockaddr_in server = {};
-		int fd = 0;
-		_(fd = connectServer(&server, nThreads));
-
-		socklen_t len = sizeof(server);
-		InetCut cut = {};
-
-		int sk = 0;
-		_(sk = accept(fd, NULL, NULL));
-		alarm(5);
-		_(read(sk, &cut, sizeof(cut)));
-		alarm(0);
-		double sum = 0;
-
+	while(1)
+	{	
 		time_t start = time(NULL);
-		_(sum = integrate(cut.xStart, cut.xEnd, cut.cutNumber, cut.nThreads));
+		printf("%lg", integrate(-2, 2, 360360000ull*10, nThreads));
 		fprintf(stderr, "%li\n", time(NULL) - start);
-		_(write(sk, &sum, sizeof(sum)));
-
-		close(sk);
-		close(fd);
-
-		printf("%lg\n", sum);
 	}
 	return 0;
 }
+
