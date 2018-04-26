@@ -43,12 +43,7 @@ typedef struct CalcArgs
 	cpu_set_t cpuSet;
 }CalcArgs;
 
-<<<<<<< HEAD
-double X_START = -10000;
-double X_END = 10000;
-long long int CUTS = 10000000000;
-=======
->>>>>>> 220d2044746070e4a4d39a50aefebdc27c3b5c32
+
 
 
 typedef struct CpuIds
