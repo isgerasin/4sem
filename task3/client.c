@@ -240,8 +240,8 @@ int main(int argc, char const *argv[])
 
 		time_t start = time(NULL);
 		_(sum = integrate(cut.xStart, cut.xEnd, cut.cutNumber, cut.nThreads));
-		fprintf(stderr, "%li\n", time(NULL) - start);
 		_(write(sk, &sum, sizeof(sum)));
+		fprintf(stderr, "%li\n", time(NULL) - start);
 
 		close(sk);
 		close(fd);
