@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+=====ListElem Dump[0xd6e240]=======
+=======
 =====ListElem Dump[0x1254240]=======
+>>>>>>> 220d2044746070e4a4d39a50aefebdc27c3b5c32
 ERROR!!!
 =================
 	data = 45
@@ -8,7 +12,11 @@ ERROR!!!
 =====ListElem Dump[(nil)]=======
 ERROR!!!
 =================
+<<<<<<< HEAD
+------List 0xd6e2a0-------
+=======
 ------List 0x12542a0-------
+>>>>>>> 220d2044746070e4a4d39a50aefebdc27c3b5c32
 ok
 	head = (nil)
 	tail = (nil)
@@ -19,6 +27,25 @@ ok
 ------List (nil)-------
 ERROR!!!
 ------------------
+<<<<<<< HEAD
+------List 0xd6e2a0-------
+ok
+	head = 0xd6e260
+	tail = 0xd6e280
+	numbers = 2
+{
+=====ListElem Dump[0xd6e260]=======
+ok
+	data = 19
+	prev = 0xd6e280
+	next = 0xd6e280
+=============================
+=====ListElem Dump[0xd6e280]=======
+ok
+	data = -98
+	prev = 0xd6e260
+	next = 0xd6e260
+=======
 ------List 0x12542a0-------
 ok
 	head = 0x1254260
@@ -36,6 +63,7 @@ ok
 	data = -98
 	prev = 0x1254260
 	next = 0x1254260
+>>>>>>> 220d2044746070e4a4d39a50aefebdc27c3b5c32
 =============================
 }
 ---------------------

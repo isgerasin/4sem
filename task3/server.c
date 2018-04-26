@@ -40,6 +40,7 @@ int connectClients(ClientId* clients, long nCalc)
 	int residue = 0;
 	ssize_t ret = 0;
 	alarm(10);
+
 	for (residue = nCalc; residue > 0; )
 	{
 		_(sendto(fdUdp, &msgC, sizeof(msgC), 0, (struct sockaddr*)&addr, sizeof(addr)));
@@ -48,8 +49,7 @@ int connectClients(ClientId* clients, long nCalc)
 		errno = 0;
 		clients[nClients].addrLen = sizeof(clients[nClients].addr);
 		ret = recvfrom(fdUdp, &msg,
-			sizeof(msg), MSG_DONTWAIT,
-			(struct sockaddr*)&clients[nClients].addr, &clients[nClients].addrLen);
+			sizeof(msg), MSG_DONTWAIT, (struct sockaddr*)&clients[nClients].addr, &clients[nClients].addrLen);
 
 		if ( ret == -1 && errno != EAGAIN && errno != EWOULDBLOCK)
 			return -1;

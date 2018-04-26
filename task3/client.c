@@ -190,6 +190,7 @@ int connectServer(struct sockaddr_in* server, long nThreads)
 		.sin_port = 0,
 		.sin_addr = htonl(INADDR_ANY)
 	};
+
 	socklen_t tcpLen = sizeof(addrTcp);
 	_(fdTcp = socket(PF_INET, SOCK_STREAM, 0));
 	_(bind(fdTcp, (struct sockaddr*)&addrTcp, sizeof(addrTcp)));
@@ -202,6 +203,7 @@ int connectServer(struct sockaddr_in* server, long nThreads)
 	_(sendto(fdUdp, &msg, sizeof(msg), 0, (struct sockaddr*)server, sizeof(*server)));
 	close(fdUdp);
 	return fdTcp;
+
 }
 
 int main(int argc, char const *argv[])
@@ -227,6 +229,7 @@ int main(int argc, char const *argv[])
 
 		socklen_t len = sizeof(server);
 		InetCut cut = {};
+
 
 		int sk = 0;
 		_(sk = accept(fd, NULL, NULL));
