@@ -108,8 +108,16 @@ int main(int argc, char const *argv[])
 		cuts[i].cutNumber = cuts[i].nThreads*eachCutNum;
 
 		// printf("i %d Threads %li Cuts %llu \n", i, cuts[i].nThreads, cuts[i].cutNumber );
+		int one = 1;
 
 		_(clients[i].fd = socket(PF_INET, SOCK_STREAM, 0));
+		_(setsockopt(clients[i].fd, SOL_SOCKET, SO_KEEPALIVE, &one, sizeof(one)));
+		 struct timeval tv;
+		tv.tv_sec = 0;
+		tv.tv_usec = 0;
+		_(setsockopt(clients[i].fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv)));
+
+
 		_(connect(clients[i].fd, (struct sockaddr*)&clients[i].addr, sizeof(clients[i].addr)));
 	}
 
@@ -120,16 +128,24 @@ int main(int argc, char const *argv[])
 	}
 	
 	double sum = 0;
-	alarm(90);
+	// alarm(90);
+
 	for (int i = 0; i < nClients; i++)
 	{
 		size_t len = 0;
+		// fd_set rd = {};
+		// FD_ZERO(&rd);
+		// FD_SET(clients[i].fd, &rd);
+		// struct timeval inteval = 
+		// _(select(clients[i].fd+1, &rd, NULL, NULL, struct timeval *restrict __timeout))
 		_(len = read(clients[i].fd, &cuts[i].sum, sizeof(cuts[i].sum)));
 		sum += cuts[i].sum;
 		close(clients[i].fd);
 	}
-	alarm(0);
+	// alarm(0);
 	printf("%lg\n", sum);
+	free(clients);
+	free(cuts);
 
 	return 0;
 }

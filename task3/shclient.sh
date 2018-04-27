@@ -2,5 +2,5 @@
 
 while /bin/true
 do
-	./server $1
+	./client $1
 done

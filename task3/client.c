@@ -230,18 +230,24 @@ int main(int argc, char const *argv[])
 		socklen_t len = sizeof(server);
 		InetCut cut = {};
 
+		int one = 1;
+		_(setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, &one, sizeof(one)));
+		 struct timeval tv;
+		tv.tv_sec = 0;
+		tv.tv_usec = 0;
+		_(setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv)));
 
 		int sk = 0;
 		_(sk = accept(fd, NULL, NULL));
-		alarm(5);
+		// alarm(5);
 		_(read(sk, &cut, sizeof(cut)));
-		alarm(0);
+		// alarm(0);
 		double sum = 0;
 
-		time_t start = time(NULL);
+		// time_t start = time(NULL);
 		_(sum = integrate(cut.xStart, cut.xEnd, cut.cutNumber, cut.nThreads));
 		_(write(sk, &sum, sizeof(sum)));
-		fprintf(stderr, "%li\n", time(NULL) - start);
+		// fprintf(stderr, "%li\n", time(NULL) - start);
 
 		close(sk);
 		close(fd);
