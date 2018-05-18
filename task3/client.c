@@ -233,9 +233,9 @@ int main(int argc, char const *argv[])
 		int one = 1;
 		_(setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, &one, sizeof(one)));
 		 struct timeval tv;
-		tv.tv_sec = 0;
-		tv.tv_usec = 0;
-		_(setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv)));
+		// tv.tv_sec = 0;
+		// tv.tv_usec = 0;
+		// _(setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv)));
 
 		int sk = 0;
 		_(sk = accept(fd, NULL, NULL));

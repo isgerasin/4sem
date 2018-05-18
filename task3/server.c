@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <linux/tcp.h>
 
 #include "debug.h"
 #include "CalcArgs.h"
@@ -109,13 +110,24 @@ int main(int argc, char const *argv[])
 
 		// printf("i %d Threads %li Cuts %llu \n", i, cuts[i].nThreads, cuts[i].cutNumber );
 		int one = 1;
-
+		struct timeval tv = {};
+		tv.tv_sec = 1;
+		tv.tv_usec = 0;
 		_(clients[i].fd = socket(PF_INET, SOCK_STREAM, 0));
 		_(setsockopt(clients[i].fd, SOL_SOCKET, SO_KEEPALIVE, &one, sizeof(one)));
-		 struct timeval tv;
-		tv.tv_sec = 0;
+
+		setsockopt(clients[i].fd, IPPROTO_TCP, TCP_KEEPIDLE, &tv,
+           sizeof(tv));
+		tv.tv_sec = 1;
 		tv.tv_usec = 0;
-		_(setsockopt(clients[i].fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv)));
+		setsockopt(clients[i].fd, IPPROTO_TCP, TCP_KEEPCNT, &tv,
+           sizeof(tv));
+		tv.tv_sec = 1;
+		tv.tv_usec = 0;
+
+	setsockopt(clients[i].fd, IPPROTO_TCP, TCP_KEEPINTVL, &tv,
+	           sizeof(tv));
+		// _(setsockopt(clients[i].fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv)));
 
 
 		_(connect(clients[i].fd, (struct sockaddr*)&clients[i].addr, sizeof(clients[i].addr)));
